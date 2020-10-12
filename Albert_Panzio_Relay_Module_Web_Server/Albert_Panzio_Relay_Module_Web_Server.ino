@@ -11,10 +11,10 @@
 #include "ESPAsyncWebServer.h"
 
 // Set to true to define Relay as Normally Open (NO)
-#define RELAY_NO    true
+#define RELAY_NO    false
 
 // Set number of relays
-#define NUM_RELAYS  5
+#define NUM_RELAYS  1
 
 // Assign each GPIO to a relay
 int relayGPIOs[NUM_RELAYS] = {5};
@@ -25,6 +25,11 @@ const char* password = "emeseesrobi87";
 
 //const char* ssid = "AlbertPanzio";
 //const char* password = "albertpanzio";
+
+// config static IP
+IPAddress ip(192, 168, 50, 155); // where 155 is the desired IP Address
+IPAddress gateway(192, 168, 50, 185); // set gateway
+IPAddress subnet(255, 255, 255, 0); // set subnet mask
 
 const char* PARAM_INPUT_1 = "relay";  
 const char* PARAM_INPUT_2 = "state";
@@ -66,12 +71,12 @@ const char index_html[] PROGMEM = R"rawliteral(
 
 // Replaces placeholder with button section in your web page
 String processor(const String& var){
-  //Serial.println(var);
+  Serial.println(var);
   if(var == "BUTTONPLACEHOLDER"){
     String buttons ="";
     for(int i=1; i<=NUM_RELAYS; i++){
       String relayStateValue = relayState(i);
-      buttons+= "<h4>Camera Relay :" + relayStateValue + " - (GPIO " + relayGPIOs[i-1] + ")</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"" + String(i) + "\" "+ relayStateValue +"><span class=\"slider\"></span></label>";
+      buttons+= "<h4>Camera Relay - (GPIO " + String(relayGPIOs[i-1]) + ")</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"" + String(i) + "\" "+ relayStateValue +"><span class=\"slider\"></span></label>";
     }
     return buttons;
   }
@@ -84,15 +89,15 @@ String relayState(int numRelay){
       return "";
     }
     else {
-      return "on";
+      return "checked";
     }
   }
   else {
     if(digitalRead(relayGPIOs[numRelay-1])){
-      return "on";
+      return "checked";
     }
     else {
-      return "";
+        return "";
     }
   }
   return "";
@@ -115,6 +120,7 @@ void setup(){
   
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
+  WiFi.config(ip, gateway, subnet);
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.println("Connecting to WiFi..");
